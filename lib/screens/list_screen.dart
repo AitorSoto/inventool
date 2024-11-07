@@ -18,10 +18,10 @@ class _ListScreenState extends State<ListScreen> {
     _loadTools();
   }
 
-  void _loadTools() async {
+  Future<void> _loadTools() async {
     final tools = await DatabaseHelper().getHerramientas();
     setState(() {
-      _tools = tools.where((tool) => tool['idPersona'] != null).toList();
+      _tools = tools;
     });
   }
 
@@ -29,6 +29,12 @@ class _ListScreenState extends State<ListScreen> {
     setState(() {
       _searchQuery = query.toLowerCase();
     });
+  }
+
+  Future<String> _getToolOwner(int? idPersona) async {
+    if (idPersona == null) return "Nadie";
+    final ownerName = await DatabaseHelper().getVolunteerNameById(idPersona);
+    return ownerName;
   }
 
   @override
@@ -40,7 +46,7 @@ class _ListScreenState extends State<ListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Herramientas Asignadas"),
+        title: const Text("Herramientas Asignadas"),
       ),
       body: Column(
         children: [
@@ -48,7 +54,7 @@ class _ListScreenState extends State<ListScreen> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               onChanged: _filterTools,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Buscar herramienta',
                 border: OutlineInputBorder(),
                 suffixIcon: Icon(Icons.search),
@@ -56,17 +62,32 @@ class _ListScreenState extends State<ListScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: filteredTools.length,
-              itemBuilder: (context, index) {
-                final tool = filteredTools[index];
-                return ListTile(
-                  title: Text(tool['nombre']),
-                  subtitle: Text("ID Persona: ${tool['idPersona']}"),
-                );
-              },
+            child: RefreshIndicator(
+              onRefresh: _loadTools,
+              child: ListView.builder(
+                itemCount: filteredTools.length,
+                itemBuilder: (context, index) {
+                  final tool = filteredTools[index];
+                  return ListTile(
+                    title: Text(tool['nombre']),
+                    subtitle: FutureBuilder<String>(
+                      future: _getToolOwner(tool['idPersona']),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text("Cargando...");
+                        } else if (snapshot.hasError) {
+                          return Text("Error: ${snapshot.error}");
+                        } else {
+                          return Text("En posesión de: ${snapshot.data}");
+                        }
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
+          )
         ],
       ),
     );

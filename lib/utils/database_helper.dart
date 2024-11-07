@@ -62,7 +62,14 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getHerramientas() async {
     final db = await database;
-    return await db.query('Herramientas');
+    return await db.query('Herramientas',
+        where: 'idPersona IS NOT NULL', orderBy: 'id');
+  }
+
+  Future<String> getVolunteerNameById(int id) async {
+    final db = await database;
+    final result = await db.query('Personas', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty ? result.first['nombre'] as String : '';
   }
 
   Future<void> updateHerramientaPersona(
