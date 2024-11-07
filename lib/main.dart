@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:inventool/list_screen.dart';
-import 'package:inventool/scan_screen.dart';
+import 'package:inventool/screens/add_tool_screen.dart';
+import 'package:inventool/screens/add_volunteer_screen.dart';
+import 'package:inventool/screens/list_screen.dart';
+import 'package:inventool/screens/scan_screen.dart';
 
 void main() {
   runApp(const QRListApp());
@@ -47,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    ListScreen(),
+    const ListScreen(),
     const ScanScreen(),
   ];
 
@@ -89,6 +91,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.contact_page),
+              title: const Text('Añadir voluntarios'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AddVolunteerScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.build),
+              title: const Text('Añadir herramientas'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AddToolScreen()),
+                );
+              },
+            )
           ],
         ),
       ),
@@ -97,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: 'Lista',
+            label: 'Lista de herramientas en uso',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner),

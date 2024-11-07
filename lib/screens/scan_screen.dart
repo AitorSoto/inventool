@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
+import '../models/scanned_object.dart';
+
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
 
@@ -15,7 +17,6 @@ class _ScanScreenState extends State<ScanScreen> {
   // Método para iniciar el escaneo de QR
   Future<void> scanQRCode() async {
     try {
-      // Escanear el código QR y obtener el resultado
       final result = await FlutterBarcodeScanner.scanBarcode(
         '#ff6666', // Color del botón de cancelación
         'Cancelar', // Texto del botón de cancelación
@@ -64,14 +65,4 @@ class _ScanScreenState extends State<ScanScreen> {
       ),
     );
   }
-}
-
-class ScannedObject {
-  final String id;
-  final String name;
-
-  ScannedObject({required this.id, required this.name});
-
-  @override
-  String toString() => 'ID: $id, Name: $name';
 }
