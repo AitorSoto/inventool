@@ -65,6 +65,12 @@ class DatabaseHelper {
     return await db.query('Herramientas', orderBy: 'id');
   }
 
+  Future<List<Map<String, dynamic>>> getHerramientasInUse() async {
+    final db = await database;
+    return await db.query('Herramientas',
+        where: 'idPersona IS NOT NULL', orderBy: 'id');
+  }
+
   Future<int?> getIdPersonaById(int id) async {
     final db = await database;
     final result =

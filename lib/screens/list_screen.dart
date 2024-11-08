@@ -11,6 +11,7 @@ class ListScreen extends StatefulWidget {
 class _ListScreenState extends State<ListScreen> {
   List<Map<String, dynamic>> _tools = [];
   String _searchQuery = "";
+  bool _showInUseOnly = false;
 
   @override
   void initState() {
@@ -19,7 +20,9 @@ class _ListScreenState extends State<ListScreen> {
   }
 
   Future<void> _loadTools() async {
-    final tools = await DatabaseHelper().getHerramientas();
+    final tools = _showInUseOnly
+        ? await DatabaseHelper().getHerramientasInUse()
+        : await DatabaseHelper().getHerramientas();
     setState(() {
       _tools = tools;
     });
@@ -46,7 +49,29 @@ class _ListScreenState extends State<ListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Herramientas Asignadas"),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("Herramientas Asignadas"),
+            Row(
+              children: [
+                const Text(
+                  "En uso",
+                  style: TextStyle(fontSize: 13),
+                ),
+                Switch(
+                  value: _showInUseOnly,
+                  onChanged: (value) {
+                    setState(() {
+                      _showInUseOnly = value;
+                    });
+                    _loadTools();
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -87,7 +112,7 @@ class _ListScreenState extends State<ListScreen> {
                 },
               ),
             ),
-          )
+          ),
         ],
       ),
     );
