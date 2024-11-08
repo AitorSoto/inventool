@@ -97,10 +97,10 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
-  Future<bool> isVolunteerUsingTool(int volunteerId) async {
+  Future<bool> isVolunteerUsingTool(int volunteerId, int toolId) async {
     final db = await database;
     final result = await db.query('Herramientas',
-        where: 'idPersona = ?', whereArgs: [volunteerId]);
+        where: 'idPersona = ? and id = ?', whereArgs: [volunteerId, toolId]);
     return result.isNotEmpty;
   }
 
