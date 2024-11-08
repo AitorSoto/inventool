@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:inventool/models/tool.dart';
 
 import '../utils/database_helper.dart';
 
@@ -17,6 +16,28 @@ class _AddToolScreenState extends State<AddToolScreen> {
 
   void _addHerramienta() async {
     if (_nameController.text.isNotEmpty && _idToolController.text.isNotEmpty) {
+      var toolExists = await DatabaseHelper().existsTool(
+        int.tryParse(_idToolController.text)!,
+      );
+      if (toolExists) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: Text(
+                  "La herramienta con id '${_idToolController.text}' ya existe"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
       await DatabaseHelper().insertHerramienta({
         'id': int.parse(_idToolController.text),
         'nombre': _nameController.text,

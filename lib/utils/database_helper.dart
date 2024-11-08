@@ -62,8 +62,14 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getHerramientas() async {
     final db = await database;
-    return await db.query('Herramientas',
-        where: 'idPersona IS NOT NULL', orderBy: 'id');
+    return await db.query('Herramientas', orderBy: 'id');
+  }
+
+  Future<int?> getIdPersonaById(int id) async {
+    final db = await database;
+    final result =
+        await db.query('Herramientas', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty ? result.first['idPersona'] as int? : null;
   }
 
   Future<String> getVolunteerNameById(int id) async {
@@ -72,14 +78,42 @@ class DatabaseHelper {
     return result.isNotEmpty ? result.first['nombre'] as String : '';
   }
 
-  Future<void> updateHerramientaPersona(
-      int herramientaId, int? personaId) async {
+  Future<void> assignToolToVolunteer(int toolId, int volunteerId) async {
     final db = await database;
-    await db.update(
-      'Herramientas',
-      {'idPersona': personaId},
-      where: 'id = ?',
-      whereArgs: [herramientaId],
-    );
+    await db.update('Herramientas', {'idPersona': volunteerId},
+        where: 'id = ?', whereArgs: [toolId]);
+  }
+
+  Future<void> returnTool(int toolId) async {
+    final db = await database;
+    await db.update('Herramientas', {'idPersona': null},
+        where: 'id = ?', whereArgs: [toolId]);
+  }
+
+  Future<bool> isToolBeingUsed(int toolId) async {
+    final db = await database;
+    final result = await db.query('Herramientas',
+        where: 'id = ? AND idPersona IS NOT NULL', whereArgs: [toolId]);
+    return result.isNotEmpty;
+  }
+
+  Future<bool> isVolunteerUsingTool(int volunteerId) async {
+    final db = await database;
+    final result = await db.query('Herramientas',
+        where: 'idPersona = ?', whereArgs: [volunteerId]);
+    return result.isNotEmpty;
+  }
+
+  Future<bool> existsVolunteer(int id) async {
+    final db = await database;
+    final result = await db.query('Personas', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty;
+  }
+
+  Future<bool> existsTool(int id) async {
+    final db = await database;
+    final result =
+        await db.query('Herramientas', where: 'id = ?', whereArgs: [id]);
+    return result.isNotEmpty;
   }
 }

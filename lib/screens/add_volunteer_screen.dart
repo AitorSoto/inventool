@@ -15,6 +15,28 @@ class _AddVolunteerScreenState extends State<AddVolunteerScreen> {
 
   void _addPersona() async {
     if (_nameController.text.isNotEmpty && _idController.text.isNotEmpty) {
+      var volunteerExists = await DatabaseHelper().existsVolunteer(
+        int.tryParse(_idController.text)!,
+      );
+      if (volunteerExists) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("Error"),
+              content: Text(
+                  "El voluntario con id '${_idController.text}' ya existe"),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+        return;
+      }
       await DatabaseHelper().insertPersona({
         'nombre': _nameController.text,
         'id': int.parse(_idController.text),
