@@ -16,9 +16,8 @@ class _AddToolScreenState extends State<AddToolScreen> {
 
   void _addHerramienta() async {
     if (_nameController.text.isNotEmpty && _idToolController.text.isNotEmpty) {
-      var toolExists = await DatabaseHelper().existsTool(
-        int.tryParse(_idToolController.text)!,
-      );
+      var toolExists =
+          await DatabaseHelper().existsTool(_idToolController.text);
       if (toolExists) {
         showDialog(
           context: context,
@@ -39,7 +38,7 @@ class _AddToolScreenState extends State<AddToolScreen> {
         return;
       }
       await DatabaseHelper().insertHerramienta({
-        'id': int.parse(_idToolController.text),
+        'id': _idToolController.text.toUpperCase(),
         'nombre': _nameController.text,
         'idPersona': _selectedPersona,
       });

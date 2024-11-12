@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import '../utils/database_helper.dart';
+import 'package:inventool/screens/edit_tool_screen.dart';
+import 'package:inventool/utils/database_helper.dart';
+import 'package:inventool/main.dart'; // Importa el archivo donde definiste routeObserver
+
+import '../models/tool.dart';
 
 class ListScreen extends StatefulWidget {
   const ListScreen({super.key});
@@ -8,10 +12,9 @@ class ListScreen extends StatefulWidget {
   _ListScreenState createState() => _ListScreenState();
 }
 
-class _ListScreenState extends State<ListScreen> {
+class _ListScreenState extends State<ListScreen> with RouteAware {
   List<Map<String, dynamic>> _tools = [];
   String _searchQuery = "";
-  bool _showInUseOnly = false;
 
   @override
   void initState() {
@@ -19,10 +22,35 @@ class _ListScreenState extends State<ListScreen> {
     _loadTools();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute<dynamic>);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _loadTools(); // Recargar herramientas cuando la pantalla vuelve a ser visible
+  }
+
+  Future<String> _getToolOwner(int? idPersona) async {
+    if (idPersona == null) {
+      return 'No asignado';
+    }
+    final db = await DatabaseHelper().database;
+    final result =
+        await db.query('Personas', where: 'id = ?', whereArgs: [idPersona]);
+    return result.isNotEmpty ? result.first['nombre'] as String : 'No asignado';
+  }
+
   Future<void> _loadTools() async {
-    final tools = _showInUseOnly
-        ? await DatabaseHelper().getHerramientasInUse()
-        : await DatabaseHelper().getHerramientas();
+    final tools = await DatabaseHelper().getHerramientas();
     setState(() {
       _tools = tools;
     });
@@ -34,44 +62,17 @@ class _ListScreenState extends State<ListScreen> {
     });
   }
 
-  Future<String> _getToolOwner(int? idPersona) async {
-    if (idPersona == null) return "Nadie";
-    final ownerName = await DatabaseHelper().getVolunteerNameById(idPersona);
-    return ownerName;
-  }
-
   @override
   Widget build(BuildContext context) {
     final filteredTools = _tools.where((tool) {
-      final toolName = tool['nombre'].toLowerCase();
+      final toolName =
+          '${tool['nombre'].toLowerCase()} ${tool['id'].toString().toLowerCase()}';
       return toolName.contains(_searchQuery);
     }).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("Herramientas Asignadas"),
-            Row(
-              children: [
-                const Text(
-                  "En uso",
-                  style: TextStyle(fontSize: 13),
-                ),
-                Switch(
-                  value: _showInUseOnly,
-                  onChanged: (value) {
-                    setState(() {
-                      _showInUseOnly = value;
-                    });
-                    _loadTools();
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+        title: const Text("Lista de Herramientas"),
       ),
       body: Column(
         children: [
@@ -94,7 +95,7 @@ class _ListScreenState extends State<ListScreen> {
                 itemBuilder: (context, index) {
                   final tool = filteredTools[index];
                   return ListTile(
-                    title: Text(tool['nombre']),
+                    title: Text('${tool['id']} - ${tool['nombre']}'),
                     subtitle: FutureBuilder<String>(
                       future: _getToolOwner(tool['idPersona']),
                       builder: (context, snapshot) {
@@ -108,6 +109,23 @@ class _ListScreenState extends State<ListScreen> {
                         }
                       },
                     ),
+                    onTap: () async {
+                      final updated = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditToolScreen(
+                            tool: Tool(
+                              id: tool['id'],
+                              name: tool['nombre'],
+                              brotherId: tool['idPersona'],
+                            ),
+                          ),
+                        ),
+                      );
+                      if (updated == true) {
+                        _loadTools(); // Recargar herramientas si se actualizó o eliminó una herramienta
+                      }
+                    },
                   );
                 },
               ),

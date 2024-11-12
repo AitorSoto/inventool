@@ -16,7 +16,7 @@ class _ScanScreenState extends State<ScanScreen> {
   String? scannedData;
 
   // Método para mostrar el diálogo de entrada
-  Future<void> showInputAlertDialog(BuildContext context, int toolId) async {
+  Future<void> showInputAlertDialog(BuildContext context, String toolId) async {
     final TextEditingController controller = TextEditingController();
     bool isError = false;
     String errorText = '';
@@ -32,6 +32,7 @@ class _ScanScreenState extends State<ScanScreen> {
             children: <Widget>[
               TextField(
                 controller: controller,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Inserta tu identificación',
                   border: const OutlineInputBorder(),
@@ -100,7 +101,7 @@ class _ScanScreenState extends State<ScanScreen> {
   // Método para iniciar el escaneo de QR
   Future<void> scanQRCode() async {
     try {
-      final result = await Navigator.of(context).push(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => AiBarcodeScanner(
             onDispose: () {
@@ -110,7 +111,7 @@ class _ScanScreenState extends State<ScanScreen> {
             controller: MobileScannerController(
               detectionSpeed: DetectionSpeed.noDuplicates,
             ),
-            onDetect: (BarcodeCapture capture) {
+            onDetect: (BarcodeCapture capture) async {
               final String? scannedValue = capture.barcodes.first.rawValue;
               debugPrint("Barcode scanned: $scannedValue");
 
@@ -132,8 +133,12 @@ class _ScanScreenState extends State<ScanScreen> {
                       "ID: ${scannedObject.id}\nNombre: ${scannedObject.name}";
                 });
 
-                var toolId = int.tryParse(scannedObject.id)!;
-                showInputAlertDialog(context, toolId);
+                await DatabaseHelper().existsTool(scannedObject.id)
+                    ? showInputAlertDialog(context, scannedObject.id)
+                    : ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text(
+                            "La herramienta no existe en la base de datos"),
+                      ));
               }
             },
             validator: (value) {

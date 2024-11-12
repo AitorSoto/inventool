@@ -1,45 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:inventool/screens/add_tool_screen.dart';
-import 'package:inventool/screens/add_volunteer_screen.dart';
 import 'package:inventool/screens/list_screen.dart';
 import 'package:inventool/screens/scan_screen.dart';
+import 'package:inventool/screens/add_tool_screen.dart';
+import 'package:inventool/screens/add_volunteer_screen.dart';
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() {
-  runApp(const QRListApp());
+  runApp(const Inventool());
 }
 
-class QRListApp extends StatefulWidget {
-  const QRListApp({super.key});
-
-  @override
-  _QRListAppState createState() => _QRListAppState();
-}
-
-class _QRListAppState extends State<QRListApp> {
-  bool isDarkMode = false;
-
-  void toggleTheme() {
-    setState(() {
-      isDarkMode = !isDarkMode;
-    });
-  }
+class Inventool extends StatelessWidget {
+  const Inventool({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Inventool',
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
-      home: HomeScreen(toggleTheme: toggleTheme, isDarkMode: isDarkMode),
+      navigatorObservers: [routeObserver],
+      home: HomeScreen(
+        isDarkMode: false,
+        toggleTheme: () {},
+      ),
     );
   }
 }
 
 class HomeScreen extends StatefulWidget {
-  final Function toggleTheme;
   final bool isDarkMode;
+  final Function toggleTheme;
 
   const HomeScreen(
-      {super.key, required this.toggleTheme, required this.isDarkMode});
+      {super.key, required this.isDarkMode, required this.toggleTheme});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -105,14 +96,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ListTile(
               leading: const Icon(Icons.build),
               title: const Text('Añadir herramientas'),
-              onTap: () {
-                Navigator.push(
+              onTap: () async {
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const AddToolScreen()),
                 );
+                setState(() {
+                  _screens[0] =
+                      const ListScreen(); // Recargar la pantalla de lista
+                });
               },
-            )
+            ),
           ],
         ),
       ),
@@ -121,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: 'Lista de herramientas en uso',
+            label: 'Lista de herramientas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_scanner),
