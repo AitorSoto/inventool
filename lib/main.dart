@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventool/screens/add_sql_toold.dart';
 import 'package:inventool/screens/list_screen.dart';
 import 'package:inventool/screens/scan_screen.dart';
 import 'package:inventool/screens/add_tool_screen.dart';
@@ -106,6 +107,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   _screens[0] =
                       const ListScreen(); // Recargar la pantalla de lista
                 });
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.code),
+              title: const Text('Ejecutar SQL'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddSQLToolScreen(),
+                  ),
+                );
               },
             ),
           ],

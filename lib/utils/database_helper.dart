@@ -143,4 +143,16 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  Future<void> executeDevSQL(String sql) async {
+    final db = await database;
+
+    try {
+      await db.transaction((txn) async {
+        await txn.execute(sql);
+      });
+    } catch (e) {
+      print("Error ejecutando SQL: $e");
+    }
+  }
 }

@@ -1,8 +1,8 @@
-class Brother {
+class Volunteer {
   final int id;
   final String name;
 
-  Brother({required this.id, required this.name});
+  Volunteer({required this.id, required this.name});
 
   // Convertir a mapa para insertar en la base de datos
   Map<String, dynamic> toMap() {
@@ -13,8 +13,8 @@ class Brother {
   }
 
   // Convertir de un mapa a objeto
-  static Brother fromMap(Map<String, dynamic> map) {
-    return Brother(
+  static Volunteer fromMap(Map<String, dynamic> map) {
+    return Volunteer(
       id: map['id'],
       name: map['nombre'],
     );
